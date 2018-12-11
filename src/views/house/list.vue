@@ -9,7 +9,7 @@
           <el-input placeholder="姓名2"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary">查询</el-button>
+          <el-button type="primary" @click="searchHouseList">查询</el-button>
         </el-form-item>
         <el-form-item style="float:right;margin-right:0">
           <el-button type="primary" @click="dialogFormVisible = true">新增</el-button>
@@ -43,19 +43,25 @@
 </template>
 <script>
   import Pagination from '@/components/Pagination'
-  import Modal from '@/components/Modal'
   import Add from './components/add'
   import detail from './components/detail/index'
 
+  import {getHouseList} from '@/api/house'
+
   export default {
     props: ['viewHeight'],
-    components: { Pagination, Add, Modal, detail },
+    components: { Pagination, Add, detail },
     methods: {
       handleClick (row, event) {
         console.log(row)
         console.log(event)
         this.detail_house_id = row.name
         this.dialogFormVisibleDetail = true
+      },
+      searchHouseList () {
+        getHouseList({a: 1, baaaa: 2}).then(function (res) {
+          console.log(res)
+        })
       },
       aaa () {
         alert(1)
