@@ -87,3 +87,5 @@ module.exports = app.listen(port, function(err) {
     require('./dev-nw')(uri)
   }
 })
+
+// nw_pack
