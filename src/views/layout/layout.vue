@@ -75,6 +75,8 @@ export default {
 .el-main {
   background-color: #fff;
   padding:10px;
+  padding-right:0;
+  padding-bottom:0;
 }
 .el-col{
   // border:1px solid #000

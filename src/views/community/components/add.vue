@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-dialog 
-      title="新增房源" 
+      title="新增客户" 
       width="800px" 
       :visible="true" 
       @close="close"

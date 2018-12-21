@@ -45,7 +45,7 @@ export const constantRouterMap = [
     redirect: '/house/list',
     meta: {title: '房源本'},
     children: [
-        {path: 'list', component: () => import('@/views/house/list'), meta: {title: '列222表'}},
+        {path: 'list', component: () => import('@/views/house/list'), meta: {title: '房源列表'}},
         {path: 'add', component: Hello, hidden: true}
     ]
   },
@@ -56,18 +56,18 @@ export const constantRouterMap = [
     redirect: '/client/list',
     meta: {title: '客户本'},
     children: [
-        {path: 'list', name: '选项2-1', component: () => import('@/views/client/list'), meta: {title: '列a222表'}}
+        {path: 'list', component: () => import('@/views/client/list'), meta: {title: '客户列表'}}
     ]
   },
   {
     name: 'backend',
-    path: '/house',
+    path: '/backend',
     component: layout,
-    redirect: '/house/list',
+    redirect: '/backend/community/list',
     meta: {title: '管理中心'},
     children: [
-        {path: 'list', name: '小区', component: () => import('@/views/house/list'), meta: {title: '小区'}},
-        {path: 'list', name: '用户', component: () => import('@/views/house/list'), meta: {title: '用户'}}
+        {path: 'community/list', component: () => import('@/views/community/list'), meta: {title: '小区管理'}},
+        {path: 'user/list', component: () => import('@/views/user/list'), meta: {title: '用户管理'}}
     ]
   },
   {

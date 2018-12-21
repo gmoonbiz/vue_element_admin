@@ -28,14 +28,19 @@ fs.writeFile(manifestPath, JSON.stringify(manifest, null, '  '), 'utf-8', functi
   // start build app
   if (!config.build.nw.builder) return
   var NwBuilder = require('nw-builder')
+
   var nw = new NwBuilder(config.build.nw.builder)
   nw.build(function(err, data) {
     if (err) console.log(err)
-    console.log('build nw done!')
 
+    console.log('build nw done!')
+return;
     // build windows setup
     if (config.build.noSetup) return
-    if (~config.build.nw.builder.platforms.toString().indexOf('win')) buildWinSetup().then(() => buildUpgrade(manifest))
+    if (~config.build.nw.builder.platforms.toString().indexOf('win'))
+      buildWinSetup().then(() => buildUpgrade(manifest))
     else buildUpgrade(manifest)
   })
+
+  nw.on('log',  console.log);
 })

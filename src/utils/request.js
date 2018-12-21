@@ -6,7 +6,7 @@ import { Message } from 'element-ui'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: 'http://www.dd.com:81', // api 的 base_url
+  baseURL: 'http://www.dd.com:85', // api 的 base_url
   timeout: 5000 // request timeout
 })
 

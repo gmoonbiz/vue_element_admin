@@ -3,10 +3,7 @@
     <el-col :span="24" class="toolbar" style="background:#eef1f6;padding:8px">
       <el-form :inline="true">
         <el-form-item>
-          <el-input placeholder="区域" v-model="form.district"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-input placeholder="小区" v-model="form.community"></el-input>
+          <el-input placeholder="小区名称" v-model="form.district"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="searchHouseList">查询</el-button>
@@ -16,7 +13,6 @@
         </el-form-item>
       </el-form>
     </el-col>
-
     <el-table
       ref="listTable"
       :data="listData"
@@ -27,16 +23,11 @@
       @row-dblclick="handleClick"
       @sort-change="changeSort"
       style="width: 100%">
-      <el-table-column prop="document_id" label="编号" width="60"></el-table-column>
-      <el-table-column prop="district_region" label="区域"></el-table-column>
-      <el-table-column prop="community" label="小区"></el-table-column>
-      <el-table-column prop="huxing" label="户型"></el-table-column>
-      <el-table-column prop="area" label="面积" width="80" sortable="true"></el-table-column>
-      <el-table-column prop="decoration" label="装修" width="60"></el-table-column>
-      <el-table-column prop="sale_price" label="总价" width="80" sortable="true"></el-table-column>
-      <el-table-column prop="unit_price" label="单价" width="80" sortable="true"></el-table-column>
-      <el-table-column prop="principal_username" label="发布人" width="100"></el-table-column>
-      <el-table-column prop="create_time" label="发布时间" sortable="true"></el-table-column>
+      <el-table-column prop="document_id" label="编号" width="80"></el-table-column>
+      <el-table-column prop="community_name" label="小区名称"></el-table-column>
+      <el-table-column prop="district_name" label="行政区"></el-table-column>
+      <el-table-column prop="biz_area_name" label="商圈"></el-table-column>
+      <el-table-column prop="address" label="地址" width="240"></el-table-column>
       <el-table-column label="操作" width="140">
         <template slot-scope="scope">
           <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
@@ -57,7 +48,7 @@
   import detail from './components/detail/index'
 
   import util from '@/utils/util'
-  import {getHouseList} from '@/api/house'
+  import {getCommunityList} from '@/api/community'
 
   export default {
     props: ['viewHeight'],
@@ -82,7 +73,7 @@
       }
     },
     created () {
-      searchHouseList(this)
+      searchList(this)
     },
     methods: {
       handleClick (row, event) {
@@ -96,11 +87,11 @@
         this.order = null
         this.order_direction = null
         this.$refs.listTable.clearSort()
-        searchHouseList(this)
+        searchList(this)
       },
       changePage (page) {
         this.page = page
-        searchHouseList(this)
+        searchList(this)
       },
       changeSort (option) {
         this.order = option.prop
@@ -112,7 +103,7 @@
           this.order_direction = option.order
         }
 
-        searchHouseList(this)
+        searchList(this)
       },
       aaa () {
         alert(1)
@@ -139,7 +130,7 @@
   }
 
   // 加载列表
-  function searchHouseList (that) {
+  function searchList (that) {
     var param = {}
     if (that.page) {
       param.page = that.page
@@ -157,14 +148,14 @@
     }
 
     that.loading = true
-    getHouseList(param).then(function (res) {
+    getCommunityList(param).then(function (res) {
       var data = res.data.data
       var count = res.data.statistic.count
       that.total = count
 
       for (var i in data) {
-        data[i].district_region = data[i].district + '-' + data[i].region
-        data[i].huxing = data[i].room + '室' + data[i].living_room + '厅'
+        var info = data[i]
+        data[i].yaoqiu = info.type + info.purpose + ', 面积：' + info.area_min + '-' + info.area_max + '平米'
         data[i].create_time = util.formatTimestamp(data[i].create_time, 16)
       }
 
