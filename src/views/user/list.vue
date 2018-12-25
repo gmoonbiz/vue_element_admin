@@ -23,17 +23,15 @@
       border
       stripe
       :height="viewHeight - 105"
-      @row-dblclick="handleClick"
       @sort-change="changeSort"
       style="width: 100%">
       <el-table-column prop="document_id" label="编号" width="60"></el-table-column>
       <el-table-column prop="username" label="姓名"></el-table-column>
       <el-table-column prop="gender" label="性别"></el-table-column>
       <el-table-column prop="tel" label="电话"></el-table-column>
-      <el-table-column prop="join_time" label="入职时间"></el-table-column>
+      <el-table-column prop="join_time" label="入职日期"></el-table-column>
       <el-table-column label="操作" width="140">
         <template slot-scope="scope">
-          <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
           <el-button type="text" size="small">编辑</el-button>
           <el-button type="text" size="small" @click="del">删除</el-button>
         </template>
@@ -48,14 +46,13 @@
 <script>
   import Pagination from '@/components/Pagination'
   import Add from './components/add'
-  import detail from './components/detail/index'
 
   import util from '@/utils/util'
   import {getUserList} from '@/api/user'
 
   export default {
     props: ['viewHeight'],
-    components: { Pagination, Add, detail },
+    components: { Pagination, Add },
     data () {
       return {
         dialogAddVisible: false,
@@ -79,12 +76,6 @@
       searchUserList(this)
     },
     methods: {
-      handleClick (row, event) {
-        console.log(row)
-        console.log(event)
-        this.detail_house_id = row.name
-        this.dialogFormVisibleDetail = true
-      },
       searchHouseList () {
         this.page = 1
         this.order = null
@@ -158,7 +149,7 @@
 
       for (var i in data) {
         var info = data[i]
-        data[i].join_time = util.formatTimestamp(info.join_time, 16)
+        data[i].join_time = util.formatTimestamp(info.join_time, 10)
       }
 
       that.listData = data

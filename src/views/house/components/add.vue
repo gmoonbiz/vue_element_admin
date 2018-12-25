@@ -8,7 +8,7 @@
       :close-on-click-modal="false"
       :close-on-press-escape="true"
     >
-      <div style="max-height:400px;overflow:auto;padding-right:20px">
+      <div style="max-height:360px;overflow:auto;padding-right:20px">
         <el-form :model="form" :rules="rules">
           <el-row>
             <el-col :span="12">

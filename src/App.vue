@@ -31,11 +31,11 @@ body {
   width: 100%;
 }
 .el-dialog__body{
-  padding-top:10px;
-  padding-bottom:10px;
+  // padding-top:10px;
+  // padding-bottom:10px;
 }
 .el-dialog__footer{
-  padding-bottom:10px
+  // padding-bottom:10px
 }
 .fade-enter-active,
 .fade-leave-active {

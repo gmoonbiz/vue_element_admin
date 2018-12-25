@@ -34,7 +34,7 @@ fs.writeFile(manifestPath, JSON.stringify(manifest, null, '  '), 'utf-8', functi
     if (err) console.log(err)
 
     console.log('build nw done!')
-return;
+
     // build windows setup
     if (config.build.noSetup) return
     if (~config.build.nw.builder.platforms.toString().indexOf('win'))
