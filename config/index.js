@@ -69,7 +69,7 @@ module.exports = {
       },
       upgrade: {
         outputFile: resolve('./releases/upgrade.json'),
-        publicPath: 'http://localhost:8080/releases/',
+        publicPath: 'http://1t8.cn/releases/',
         files: [curReleasesPath]
       }
     }

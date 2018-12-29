@@ -67,7 +67,7 @@
     components: { Pagination, Add, detail },
     data () {
       return {
-        dialogAddVisible: true,
+        dialogAddVisible: false,
         dialogFormVisibleDetail: false,
         detail_house_id: 'aaa',
 

@@ -11,8 +11,8 @@ Vue.config.productionTip = true
 Vue.use(ElementUI, { size: 'small', zIndex: 3000 })
 
 // for auto update
-import { checkUpdate } from '@/utils/update.js'
-checkUpdate()
+// import { checkUpdate } from '@/utils/update.js'
+// checkUpdate()
 
 /* eslint-disable no-new */
 new Vue({

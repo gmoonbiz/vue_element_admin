@@ -17,6 +17,22 @@ function formatTimestamp (timestamp, length) {
   return fullDate.substr(0, length)
 }
 
+function trim (str) {
+  if (typeof str !== 'string') {
+    return str
+  }
+  return str.replace(/(^\s*)|(\s*$)/g, '')
+}
+
+function trimAll (str) {
+  if (typeof str !== 'string') {
+    return str
+  }
+  return str.replace(/(\s*)/g, '')
+}
+
 export default {
-  formatTimestamp
+  formatTimestamp,
+  trim,
+  trimAll
 }

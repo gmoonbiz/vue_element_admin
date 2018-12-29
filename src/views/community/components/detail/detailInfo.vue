@@ -1,35 +1,44 @@
 <template>
-  <div>
-    <el-row>
-      <template v-for="item in detail_list">
-        <el-col class="detail_item" :span="12" style="margin-bottom:14px">{{item}}</el-col>  
-      </template>
+  <div v-loading="pageLoading" style="padding-left:40px;padding-right:20px">
+    <el-row style="border-bottom:1px solid #efefef">
+      <el-col :span="24" style="font-size:18px;color:#409EFF">{{info.community_name}}</el-col>  
+      <el-col :span="24"><span class="label">地址：</span>{{info.district_name}}-{{info.biz_area_name}}-{{info.address}}</el-col>  
+    </el-row>
+    <el-row style="margin-top:20px">
+      <el-col :span="12"><span class="label">编号：</span>{{info.document_id}}</el-col>  
+      <el-col :span="12"><span class="label">建造年代：</span>{{info.build_year}}</el-col>  
+      <el-col :span="12"><span class="label">物业费：</span>{{info.wuye_fee}}</el-col>  
+      <el-col :span="12"><span class="label">绿化率：</span>{{info.green}}</el-col> 
+      <el-col :span="12"><span class="label">开发商：</span>{{info.developer}}</el-col>  
+      <el-col :span="12"><span class="label">物业公司：</span>{{info.wuye_company}}</el-col> 
+      <el-col :span="12"><span class="label">小学：</span>{{info.school}}</el-col>  
+      <el-col :span="12"><span class="label">中学：</span>{{info.mid_school}}</el-col>  
     </el-row>
   </div>
 </template>
 <script>
+  import {getCommunityDetail} from '@/api/community'
+
   export default {
+    props: ['document_id'],
     data () {
       return {
-        detail_list: [
-          '编号：45102',
-          '发布人：用户162581-默认门店',
-          '类型：住宅',
-          '权限：公司公盘',
-          '户型：3室2厅',
-          '楼层：1',
-          '面积：109平',
-          '装修：精装',
-          '价格：155万',
-          '单价：14220元',
-          '小学：暂无',
-          '中学：暂无',
-          '房产证：未满二年',
-          '产权：个人产权'
-        ]
+        pageLoading: true,
+        info: {}
       }
+    },
+    created () {
+      var that = this
+
+      getCommunityDetail({document_id: this.document_id}).then((res) => {
+        that.info = res.data
+        that.pageLoading = false
+      })
     }
   }
 </script>
 <style scoped lang="scss">
+.el-col{
+  margin-bottom:14px
+}
 </style>

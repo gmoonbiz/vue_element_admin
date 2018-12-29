@@ -1,13 +1,14 @@
 import axios from 'axios'
 import querystring from 'querystring'
 import { Message } from 'element-ui'
+import util from '@/utils/util'
+import config from '@/config/index'
 // import store from '@/store'
 // import { getToken } from '@/utils/auth'
 
 // create an axios instance
 const service = axios.create({
-  // baseURL: 'http://www.dd.com:85', // api 的 base_url
-  baseURL: 'http://1t8.cn', // api 的 base_url
+  baseURL: config.host, // api 的 base_url
   timeout: 5000 // request timeout
 })
 
@@ -19,6 +20,9 @@ service.interceptors.request.use(config => {
   //   config.headers['X-Token'] = getToken()
   // }
   if (config.method === 'post') {
+    for (var i in config.data) {
+      config.data[i] = util.trim(config.data[i])
+    }
     config.data = querystring.stringify(config.data)
     config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
   }

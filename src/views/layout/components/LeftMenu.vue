@@ -9,8 +9,8 @@
       <template v-for="(item, index) in menuList">
         <el-submenu v-if="!item.hidden && item.children" :index="item.name">
           <template slot="title"><i class="el-icon-message"></i>{{item.meta.title}}</template>
-          <template v-for="child in item.children">
-            <el-menu-item v-if="!child.hidden" index="1-1" :route="item.path + '/' + child.path">{{child.meta.title}}</el-menu-item>  
+          <template v-for="(child, index_child) in item.children">
+            <el-menu-item v-if="!child.hidden" :index="index + '-' + index_child" :route="item.path + '/' + child.path">{{child.meta.title}}</el-menu-item>  
           </template>
         </el-submenu>
       </template>

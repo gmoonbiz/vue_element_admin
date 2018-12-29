@@ -1,15 +1,16 @@
 <template>
   <div>
     <el-col :span="24" class="toolbar" style="background:#eef1f6;padding:8px">
-      <el-form :inline="true">
-        <el-form-item>
-          <el-input placeholder="小区名称" v-model="form.district"></el-input>
+      <el-form :inline="true" :model="form" ref="searchForm">
+        <el-form-item prop="community_name">
+          <el-input placeholder="小区名称" v-model="form.community_name"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="searchHouseList">查询</el-button>
+          <el-button type="primary" @click="searchList">查询</el-button>
+          <el-button type="primary" @click="resetForm('searchForm')">清空</el-button>
         </el-form-item>
         <el-form-item style="float:right;margin-right:0">
-          <el-button type="primary" @click="dialogAddVisible = true">新增</el-button>
+          <el-button type="primary" @click="dialogAddVisible = true; initFormDataAdd = {}">新增</el-button>
         </el-form-item>
       </el-form>
     </el-col>
@@ -19,27 +20,36 @@
       v-loading="loading"
       border
       stripe
+      highlight-current-row
       :height="viewHeight - 105"
       @row-dblclick="handleClick"
       @sort-change="changeSort"
-      style="width: 100%">
+      style="width: 100%"
+    >
       <el-table-column prop="document_id" label="编号" width="80"></el-table-column>
       <el-table-column prop="community_name" label="小区名称"></el-table-column>
       <el-table-column prop="district_name" label="行政区"></el-table-column>
       <el-table-column prop="biz_area_name" label="商圈"></el-table-column>
       <el-table-column prop="address" label="地址" width="240"></el-table-column>
+      <!-- <el-table-column prop="wuye_fee" label="物业费"></el-table-column> -->
+      <!-- <el-table-column prop="green" label="绿化率"></el-table-column> -->
+      <!-- <el-table-column prop="developer" label="开发商"></el-table-column> -->
+      <!-- <el-table-column prop="wuye_company" label="物业公司"></el-table-column> -->
+      <el-table-column prop="school" label="小学"></el-table-column>
+      <el-table-column prop="mid_school" label="中学"></el-table-column>
+      <!-- <el-table-column prop="build_year" label="建造年代"></el-table-column> -->
       <el-table-column label="操作" width="140">
         <template slot-scope="scope">
           <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-          <el-button type="text" size="small">编辑</el-button>
-          <el-button type="text" size="small" @click="del">删除</el-button>
+          <el-button type="text" size="small" @click="edit(scope.row)">编辑</el-button>
+          <el-button type="text" size="small" @click="del(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
     <pagination :page="page" :pageSize="page_size" :total="total" @changePage="changePage"/>
 
-    <add v-if="dialogAddVisible" @close="dialogAddVisible = false"/>
-    <detail v-if="dialogFormVisibleDetail" :house_id="detail_house_id" @close="dialogFormVisibleDetail = false"/>
+    <add v-if="dialogAddVisible" :initFormData="initFormDataAdd" @close="dialogAddVisible = false" @addSuccess="addSuccess" @editSuccess="editSuccess"/>
+    <detail v-if="dialogDetailVisible" :document_id="detail_document_id" @close="dialogDetailVisible = false"/>
   </div>
 </template>
 <script>
@@ -47,8 +57,9 @@
   import Add from './components/add'
   import detail from './components/detail/index'
 
+  import notice from '@/utils/notice'
   import util from '@/utils/util'
-  import {getCommunityList} from '@/api/community'
+  import {getCommunityList, delCommunity} from '@/api/community'
 
   export default {
     props: ['viewHeight'],
@@ -56,13 +67,14 @@
     data () {
       return {
         dialogAddVisible: false,
-        dialogFormVisibleDetail: false,
-        detail_house_id: 'aaa',
+        dialogDetailVisible: false,
+        detail_document_id: 0,
 
         form: {
-          district: '',
-          community: ''
+          district_name: '',
+          community_name: ''
         },
+        initFormDataAdd: {},
         page: 1,
         page_size: 20,
         order: null,
@@ -76,17 +88,31 @@
       searchList(this)
     },
     methods: {
-      handleClick (row, event) {
-        console.log(row)
-        console.log(event)
-        this.detail_house_id = row.name
-        this.dialogFormVisibleDetail = true
+      resetForm (formName) {
+        this.$refs[formName].resetFields()
+        this.searchList()
       },
-      searchHouseList () {
+      handleClick (row, event) {
+        this.detail_document_id = row.document_id
+        this.dialogDetailVisible = true
+      },
+      searchList () {
         this.page = 1
         this.order = null
         this.order_direction = null
         this.$refs.listTable.clearSort()
+        searchList(this)
+      },
+      addSuccess () {
+        this.dialogAddVisible = false
+        this.page = 1
+        this.order = 'document_id'
+        this.order_direction = 'desc'
+        this.$refs.listTable.clearSort()
+        searchList(this)
+      },
+      editSuccess () {
+        this.dialogAddVisible = false
         searchList(this)
       },
       changePage (page) {
@@ -105,24 +131,18 @@
 
         searchList(this)
       },
-      aaa () {
-        alert(1)
+      edit (row) {
+        // console.log(JSON.stringify(row))
+        this.initFormDataAdd = row
+        this.dialogAddVisible = true
       },
-      del () {
-        this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          closeOnClickModal: false,
-          type: 'warning'
-        }).then(() => {
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
-          })
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
+      del (row) {
+        var that = this
+
+        notice.confirm('确定要删除该小区吗？', () => {
+          delCommunity({document_id: row.document_id}).then(function (res) {
+            notice.success('删除成功')
+            searchList(that)
           })
         })
       }
@@ -155,8 +175,8 @@
 
       for (var i in data) {
         var info = data[i]
-        data[i].yaoqiu = info.type + info.purpose + ', 面积：' + info.area_min + '-' + info.area_max + '平米'
-        data[i].create_time = util.formatTimestamp(data[i].create_time, 16)
+        data[i].create_time = util.formatTimestamp(info.create_time, 16)
+        data[i].address_str = info.district_name + '-' + info.biz_area_name + '-' + info.address
       }
 
       that.listData = data

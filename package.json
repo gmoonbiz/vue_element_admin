@@ -81,7 +81,7 @@
     "last 2 Chrome versions"
   ],
   "main": "http://localhost:8080",
-  "manifestUrl": "http://localhost:8080/releases/upgrade.json",
+  "manifestUrl": "http://1t8.cn/releases/upgrade.json",
   "window": {
     "title": "vue-nw-seed",
     "width": 800,
