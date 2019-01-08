@@ -1,15 +1,16 @@
 <template>
   <div>
     <el-col :span="24" class="toolbar" style="background:#eef1f6;padding:8px">
-      <el-form :inline="true">
-        <el-form-item>
-          <el-input placeholder="姓名" v-model="form.district"></el-input>
+      <el-form :inline="true" :model="form" ref="searchForm">
+        <el-form-item prop="username">
+          <el-input placeholder="姓名" v-model="form.username"></el-input>
+        </el-form-item>
+        <el-form-item prop="tel">
+          <el-input placeholder="电话" v-model="form.tel"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-input placeholder="电话" v-model="form.community"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="searchHouseList">查询</el-button>
+          <el-button type="primary" @click="searchUserList">查询</el-button>
+          <el-button type="primary" @click="resetForm('searchForm')">清空</el-button>
         </el-form-item>
         <el-form-item style="float:right;margin-right:0">
           <el-button type="primary" @click="dialogAddVisible = true">新增</el-button>
@@ -32,15 +33,14 @@
       <el-table-column prop="join_time" label="入职日期"></el-table-column>
       <el-table-column label="操作" width="140">
         <template slot-scope="scope">
-          <el-button type="text" size="small">编辑</el-button>
-          <el-button type="text" size="small" @click="del">删除</el-button>
+          <el-button type="text" size="small" @click="edit(scope.row)">编辑</el-button>
+          <el-button type="text" size="small" @click="del(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
     <pagination :page="page" :pageSize="page_size" :total="total" @changePage="changePage"/>
 
-    <add v-if="dialogAddVisible" @close="dialogAddVisible = false"/>
-    <detail v-if="dialogFormVisibleDetail" :house_id="detail_house_id" @close="dialogFormVisibleDetail = false"/>
+    <add v-if="dialogAddVisible" :initFormData="initFormDataAdd" @close="dialogAddVisible = false" @addSuccess="addSuccess" @editSuccess="editSuccess"/>
   </div>
 </template>
 <script>
@@ -48,7 +48,8 @@
   import Add from './components/add'
 
   import util from '@/utils/util'
-  import {getUserList} from '@/api/user'
+  import notice from '@/utils/notice'
+  import {getUserList, delUser} from '@/api/user'
 
   export default {
     props: ['viewHeight'],
@@ -56,13 +57,12 @@
     data () {
       return {
         dialogAddVisible: false,
-        dialogFormVisibleDetail: false,
-        detail_house_id: 'aaa',
 
         form: {
-          district: '',
-          community: ''
+          username: '',
+          tel: ''
         },
+        initFormDataAdd: {},
         page: 1,
         page_size: 20,
         order: null,
@@ -76,11 +76,27 @@
       searchUserList(this)
     },
     methods: {
-      searchHouseList () {
+      resetForm (formName) {
+        this.$refs[formName].resetFields()
+        this.searchUserList()
+      },
+      searchUserList () {
         this.page = 1
         this.order = null
         this.order_direction = null
         this.$refs.listTable.clearSort()
+        searchUserList(this)
+      },
+      addSuccess () {
+        this.dialogAddVisible = false
+        this.page = 1
+        this.order = 'document_id'
+        this.order_direction = 'desc'
+        this.$refs.listTable.clearSort()
+        searchUserList(this)
+      },
+      editSuccess () {
+        this.dialogAddVisible = false
         searchUserList(this)
       },
       changePage (page) {
@@ -99,24 +115,17 @@
 
         searchUserList(this)
       },
-      aaa () {
-        alert(1)
+      edit (row) {
+        this.initFormDataAdd = row
+        this.dialogAddVisible = true
       },
-      del () {
-        this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          closeOnClickModal: false,
-          type: 'warning'
-        }).then(() => {
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
-          })
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
+      del (row) {
+        var that = this
+
+        notice.confirm('确定要删除该数据吗？', () => {
+          delUser({document_id: row.document_id}).then(function (res) {
+            notice.success('删除成功')
+            searchUserList(that)
           })
         })
       }

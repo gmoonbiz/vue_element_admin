@@ -103,6 +103,7 @@
     data () {
       return {
         form: {
+          document_id: 0,
           customer_name: '',
           gender: '男',
           common_telephone: '',
