@@ -1,19 +1,9 @@
 <template>
   <div>
-    <el-col :span="24" class="toolbar" style="background:#eef1f6;padding:8px">
+    <el-col :span="24" class="toolbar" style="padding-bottom:4px">
       <el-form :inline="true" :model="form" ref="searchForm">
-        <el-form-item prop="customer_name">
-          <el-input placeholder="客户姓名" v-model="form.customer_name"></el-input>
-        </el-form-item>
-        <el-form-item prop="common_telephone">
-          <el-input placeholder="客户电话" v-model="form.common_telephone"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="searchList">查询</el-button>
-          <el-button type="primary" @click="resetForm('searchForm')">清空</el-button>
-        </el-form-item>
         <el-form-item style="float:right;margin-right:0">
-          <el-button type="primary" @click="dialogAddVisible = true; initFormDataAdd = {}">新增</el-button>
+          <el-button type="primary" @click="dialogAddVisible = true; initFormDataAdd = {client_id: client_id}">写带看</el-button>
         </el-form-item>
       </el-form>
     </el-col>
@@ -23,24 +13,17 @@
       v-loading="loading"
       border
       stripe
-      :height="viewHeight - 105"
-      @row-dblclick="handleClick"
+      highlight-current-row
+      :height="360"
       @sort-change="changeSort"
-      style="width: 100%">
-      <el-table-column prop="document_id" label="编号" width="60"></el-table-column>
-      <el-table-column prop="customer_name" label="客户名称" width="80"></el-table-column>
-      <el-table-column prop="gender" label="性别" width="80"></el-table-column>
-      <el-table-column prop="common_telephone" label="电话" width="80"></el-table-column>
-      <el-table-column prop="yaoqiu" label="客户要求" width=""></el-table-column>
-      <!-- <el-table-column prop="daikan" label="带看记录"></el-table-column> -->
-      <el-table-column prop="status" label="状态" width="60"></el-table-column>
-      <!-- <el-table-column prop="genjin" label="跟进记录"></el-table-column> -->
-      <el-table-column prop="create_time" label="提交时间" width="120"></el-table-column>
-      <el-table-column prop="principal_username" label="所属人" width="80"></el-table-column>
+      style="width: 100%"
+    >
+      <el-table-column prop="document_id" label="编号" width="80"></el-table-column>
+      <el-table-column prop="content" label="带看内容"></el-table-column>
+      <el-table-column prop="house_id" label="带看房源" width="80"></el-table-column>
+      <el-table-column prop="guiding_date" label="带看时间" width="140"></el-table-column>
       <el-table-column label="操作" width="140">
         <template slot-scope="scope">
-          <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-          <el-button type="text" size="small" @click="edit(scope.row)">编辑</el-button>
           <el-button type="text" size="small" @click="del(scope.row)">删除</el-button>
         </template>
       </el-table-column>
@@ -48,21 +31,19 @@
     <pagination :page="page" :pageSize="page_size" :total="total" @changePage="changePage"/>
 
     <add v-if="dialogAddVisible" :initFormData="initFormDataAdd" @close="dialogAddVisible = false" @addSuccess="addSuccess" @editSuccess="editSuccess"/>
-    <detail v-if="dialogDetailVisible" :document_id="detail_document_id" @close="dialogDetailVisible = false"/>
   </div>
 </template>
 <script>
   import Pagination from '@/components/Pagination'
-  import Add from './components/add'
-  import detail from './components/detail/index'
+  import Add from './visitInfoAdd'
 
-  import util from '@/utils/util'
   import notice from '@/utils/notice'
-  import {getClientList, delClient} from '@/api/client'
+  import util from '@/utils/util'
+  import {getVisitList, delVisit} from '@/api/client'
 
   export default {
-    props: ['viewHeight'],
-    components: { Pagination, Add, detail },
+    props: ['client_id'],
+    components: { Pagination, Add },
     data () {
       return {
         dialogAddVisible: false,
@@ -70,8 +51,7 @@
         detail_document_id: 0,
 
         form: {
-          customer_name: '',
-          common_telephone: ''
+          client_id: this.client_id
         },
         initFormDataAdd: {},
         page: 1,
@@ -84,25 +64,19 @@
       }
     },
     created () {
-      searchClientList(this)
+      searchList(this)
     },
     methods: {
       resetForm (formName) {
         this.$refs[formName].resetFields()
         this.searchList()
       },
-      handleClick (row, event) {
-        console.log(row)
-        console.log(event)
-        this.detail_document_id = row.document_id
-        this.dialogDetailVisible = true
-      },
       searchList () {
         this.page = 1
         this.order = null
         this.order_direction = null
         this.$refs.listTable.clearSort()
-        searchClientList(this)
+        searchList(this)
       },
       addSuccess () {
         this.dialogAddVisible = false
@@ -110,15 +84,15 @@
         this.order = 'document_id'
         this.order_direction = 'desc'
         this.$refs.listTable.clearSort()
-        searchClientList(this)
+        searchList(this)
       },
       editSuccess () {
         this.dialogAddVisible = false
-        searchClientList(this)
+        searchList(this)
       },
       changePage (page) {
         this.page = page
-        searchClientList(this)
+        searchList(this)
       },
       changeSort (option) {
         this.order = option.prop
@@ -130,10 +104,7 @@
           this.order_direction = option.order
         }
 
-        searchClientList(this)
-      },
-      aaa () {
-        alert(1)
+        searchList(this)
       },
       edit (row) {
         // console.log(JSON.stringify(row))
@@ -143,10 +114,10 @@
       del (row) {
         var that = this
 
-        notice.confirm('确定要删除该客户吗？', () => {
-          delClient({document_id: row.document_id}).then(function (res) {
+        notice.confirm('确定要删除该记录吗？', () => {
+          delVisit({document_id: row.document_id}).then(function (res) {
             notice.success('删除成功')
-            searchClientList(that)
+            searchList(that)
           })
         })
       }
@@ -154,7 +125,7 @@
   }
 
   // 加载列表
-  function searchClientList (that) {
+  function searchList (that) {
     var param = {}
     if (that.page) {
       param.page = that.page
@@ -172,15 +143,14 @@
     }
 
     that.loading = true
-    getClientList(param).then(function (res) {
+    getVisitList(param).then(function (res) {
       var data = res.data.data
       var count = res.data.statistic.count
       that.total = count
 
       for (var i in data) {
         var info = data[i]
-        data[i].yaoqiu = info.prefer_region + info.type + info.purpose + ', 面积：' + info.area_min + '-' + info.area_max + '平米'
-        data[i].create_time = util.formatTimestamp(data[i].create_time, 16)
+        data[i].guiding_date = util.formatTimestamp(info.guiding_date, 16)
       }
 
       that.listData = data

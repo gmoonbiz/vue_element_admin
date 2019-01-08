@@ -1,35 +1,45 @@
 <template>
-  <div>
-    <el-row>
-      <template v-for="item in detail_list">
-        <el-col class="detail_item" :span="12" style="margin-bottom:14px">{{item}}</el-col>  
-      </template>
+  <div v-loading="pageLoading" style="padding-left:40px;padding-right:20px">
+    <el-row style="border-bottom:1px solid #efefef">
+      <el-col :span="24">
+        <span style="font-size:18px;color:#409EFF">{{info.customer_name}}</span>
+        <span style="margin-left:10px">{{info.gender}}</span>
+        <span style="margin-left:20px">{{info.common_telephone}}</span>
+      </el-col>  
+    </el-row>
+    <el-row style="margin-top:20px">
+      <el-col :span="24"><span class="label">编号：</span>{{info.document_id}}</el-col>  
+      <el-col :span="12"><span class="label">需求区域：</span>{{info.prefer_region}}</el-col>  
+      <el-col :span="12"><span class="label">需求面积：</span>{{info.area_min}}-{{info.area_max}}平米</el-col>  
+      <el-col :span="12"><span class="label">需求总价：</span>{{info.pay_min}}-{{info.pay_max}}万</el-col>  
+      <el-col :span="12"><span class="label">需求楼层：</span>{{info.floor_min}}-{{info.floor_max}}层</el-col>  
+      <el-col :span="24"><span class="label">备注：</span>{{info.remark}}</el-col> 
     </el-row>
   </div>
 </template>
 <script>
+  import {getClientDetail} from '@/api/client'
+
   export default {
+    props: ['document_id'],
     data () {
       return {
-        detail_list: [
-          '编号：45102',
-          '发布人：用户162581-默认门店',
-          '类型：住宅',
-          '权限：公司公盘',
-          '户型：3室2厅',
-          '楼层：1',
-          '面积：109平',
-          '装修：精装',
-          '价格：155万',
-          '单价：14220元',
-          '小学：暂无',
-          '中学：暂无',
-          '房产证：未满二年',
-          '产权：个人产权'
-        ]
+        pageLoading: true,
+        info: {}
       }
+    },
+    created () {
+      var that = this
+
+      getClientDetail({document_id: this.document_id}).then((res) => {
+        that.info = res.data
+        that.pageLoading = false
+      })
     }
   }
 </script>
 <style scoped lang="scss">
+.el-col{
+  margin-bottom:14px
+}
 </style>

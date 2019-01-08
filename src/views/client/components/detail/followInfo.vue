@@ -1,135 +1,165 @@
 <template>
   <div>
+    <el-col :span="24" class="toolbar" style="padding-bottom:4px">
+      <el-form :inline="true" :model="form" ref="searchForm">
+        <el-form-item style="float:right;margin-right:0">
+          <el-button type="primary" @click="dialogAddVisible = true; initFormDataAdd = {client_id: client_id}">写跟进</el-button>
+        </el-form-item>
+      </el-form>
+    </el-col>
     <el-table
-      :data="tableData"
+      ref="listTable"
+      :data="listData"
+      v-loading="loading"
       border
       stripe
-      size="mini"
-      :height="350"
-      @row-dblclick="handleClick"
-      style="width: 100%">
-      <el-table-column prop="date" label="日期" width="180" sortable="true"></el-table-column>
-      <el-table-column prop="name" label="姓名" width="180"></el-table-column>
-      <el-table-column prop="address" label="地址"></el-table-column>
+      highlight-current-row
+      :height="360"
+      @sort-change="changeSort"
+      style="width: 100%"
+    >
+      <el-table-column prop="document_id" label="编号" width="80"></el-table-column>
+      <el-table-column prop="content" label="跟进内容"></el-table-column>
+      <el-table-column prop="create_time" label="跟进时间" width="140"></el-table-column>
       <el-table-column label="操作" width="140">
         <template slot-scope="scope">
-          <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-          <el-button type="text" size="small">编辑</el-button>
-          <el-button type="text" size="small" @click="del">删除</el-button>
+          <el-button type="text" size="small" @click="edit(scope.row)">编辑</el-button>
+          <el-button type="text" size="small" @click="del(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
-    <pagination/>
+    <pagination :page="page" :pageSize="page_size" :total="total" @changePage="changePage"/>
+
+    <add v-if="dialogAddVisible" :initFormData="initFormDataAdd" @close="dialogAddVisible = false" @addSuccess="addSuccess" @editSuccess="editSuccess"/>
   </div>
 </template>
 <script>
   import Pagination from '@/components/Pagination'
+  import Add from './followInfoAdd'
+
+  import notice from '@/utils/notice'
+  import util from '@/utils/util'
+  import {getFollowList, delFollow} from '@/api/client'
 
   export default {
-    components: { Pagination },
+    props: ['client_id'],
+    components: { Pagination, Add },
+    data () {
+      return {
+        dialogAddVisible: false,
+        dialogDetailVisible: false,
+        detail_document_id: 0,
+
+        form: {
+          client_id: this.client_id
+        },
+        initFormDataAdd: {},
+        page: 1,
+        page_size: 20,
+        order: null,
+        order_direction: null,
+        total: 0,
+        loading: false,
+        listData: []
+      }
+    },
+    created () {
+      searchList(this)
+    },
     methods: {
-      handleClick (row, event) {
-        console.log(row)
-        console.log(event)
-        this.detail_house_id = row.name
-        this.dialogFormVisibleDetail = true
+      resetForm (formName) {
+        this.$refs[formName].resetFields()
+        this.searchList()
       },
-      aaa () {
-        alert(1)
+      searchList () {
+        this.page = 1
+        this.order = null
+        this.order_direction = null
+        this.$refs.listTable.clearSort()
+        searchList(this)
       },
-      del () {
-        this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
-          })
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
+      addSuccess () {
+        this.dialogAddVisible = false
+        this.page = 1
+        this.order = 'document_id'
+        this.order_direction = 'desc'
+        this.$refs.listTable.clearSort()
+        searchList(this)
+      },
+      editSuccess () {
+        this.dialogAddVisible = false
+        searchList(this)
+      },
+      changePage (page) {
+        this.page = page
+        searchList(this)
+      },
+      changeSort (option) {
+        this.order = option.prop
+        if (option.order === 'ascending') {
+          this.order_direction = 'asc'
+        } else if (option.order === 'descending') {
+          this.order_direction = 'desc'
+        } else {
+          this.order_direction = option.order
+        }
+
+        searchList(this)
+      },
+      edit (row) {
+        // console.log(JSON.stringify(row))
+        this.initFormDataAdd = row
+        this.dialogAddVisible = true
+      },
+      del (row) {
+        var that = this
+
+        notice.confirm('确定要删除该记录吗？', () => {
+          delFollow({document_id: row.document_id}).then(function (res) {
+            notice.success('删除成功')
+            searchList(that)
           })
         })
       }
-    },
-    data () {
-      return {
-        dialogFormVisible: false,
-        dialogFormVisibleDetail: true,
-        detail_house_id: 'aaa',
-        tableData: [{
-          date: '2016-05-02',
-          name: '王小虎1',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-04',
-          name: '王小虎2',
-          address: '上海市普陀区金沙江路 1517 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎3',
-          address: '上海市普陀区金沙江路 1519 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1519 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1519 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1519 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }]
-      }
     }
   }
+
+  // 加载列表
+  function searchList (that) {
+    var param = {}
+    if (that.page) {
+      param.page = that.page
+      param.page_size = that.page_size
+    }
+    if (that.order) {
+      param.sort = that.order
+      param.order = that.order_direction
+    }
+
+    for (var i in that.form) {
+      if (that.form[i]) {
+        param[i] = that.form[i]
+      }
+    }
+
+    that.loading = true
+    getFollowList(param).then(function (res) {
+      var data = res.data.data
+      var count = res.data.statistic.count
+      that.total = count
+
+      for (var i in data) {
+        var info = data[i]
+        data[i].create_time = util.formatTimestamp(info.create_time, 16)
+      }
+
+      that.listData = data
+      that.loading = false
+    })
+  }
 </script>
+<style scoped lang="scss">
+.el-form-item{
+  margin-bottom:0;
+}
+</style>

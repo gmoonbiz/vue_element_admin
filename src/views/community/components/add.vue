@@ -30,25 +30,14 @@
           </el-row>
           <el-row>
               <el-form-item label="小区位置" prop="address" :label-width="formLabelWidth">
-                <el-col :span="4">
-                  <el-select v-model="form.district_name" @change="initRegionList" placeholder="请选择">
-                    <el-option
-                      v-for="item in district_list"
-                      :key="item.value"
-                      :label="item.value"
-                      :value="item.value">
-                    </el-option>
-                  </el-select>
-                </el-col>
-                <el-col :span="4">
-                  <el-select v-model="form.biz_area_name" placeholder="请选择">
-                    <el-option
-                      v-for="item in region_list"
-                      :key="item.value"
-                      :label="item.value"
-                      :value="item.value">
-                    </el-option>
-                  </el-select>
+                <el-col :span="8">
+                  <el-cascader
+                    expand-trigger="hover"
+                    :options="areaOptions"
+                    v-model="areaOptionsSelect"
+                    separator="-"
+                    @change="handleAreaChange">
+                  </el-cascader>
                 </el-col>
                 <el-col :span="16">
                   <el-input v-model="form.address" placeholder="详细位置"></el-input>
@@ -105,12 +94,55 @@
   </div>
 </template>
 <script>
-  import {getDistrictList, getRegionList} from '@/api/area'
+  import {getAreaList} from '@/api/area'
   import {addCommunity} from '@/api/community'
   import notice from '@/utils/notice'
 
   export default {
     props: ['initFormData'],
+    data () {
+      return {
+        form: {
+          document_id: 0,
+          community_name: '',
+          district_name: '',
+          biz_area_name: '',
+          address: '',
+          build_year: '',
+          wuye_fee: '',
+          green: '',
+          developer: '',
+          wuye_company: '',
+          school: '',
+          mid_school: ''
+        },
+        district_list: [],
+        region_list: [],
+        areaOptions: [],
+        areaOptionsSelect: [],
+        rules: {
+          community_name: [
+            { required: true, message: '请输入小区名称', trigger: 'blur' }
+          ],
+          address: [
+            { required: true, message: '请输入小区位置', trigger: 'blur' }
+          ]
+        },
+        formLabelWidth: '80px'
+      }
+    },
+    created: function () {
+      initAreaList(this)
+      var initFormData = this.initFormData
+      for (var i in this.form) {
+        if (initFormData[i]) {
+          this.form[i] = initFormData[i]
+        }
+      }
+
+      this.areaOptionsSelect[0] = this.initFormData.district_name
+      this.areaOptionsSelect[1] = this.initFormData.biz_area_name
+    },
     methods: {
       submit (formName) {
         var that = this
@@ -135,80 +167,18 @@
       close () {
         this.$emit('close')
       },
-      initRegionList (district) {
-        console.log(district)
-        initRegionList(this, district)
-      }
-    },
-    data () {
-      return {
-        form: {
-          document_id: 0,
-          community_name: '',
-          district_name: '',
-          biz_area_name: '',
-          build_year: '',
-          wuye_fee: '',
-          green: '',
-          developer: '',
-          wuye_company: '',
-          school: '',
-          mid_school: ''
-        },
-        district_list: [],
-        region_list: [],
-        rules: {
-          community_name: [
-            { required: true, message: '请输入小区名称', trigger: 'blur' }
-          ],
-          address: [
-            { required: true, message: '请输入小区位置', trigger: 'blur' }
-          ]
-        },
-        formLabelWidth: '80px'
-      }
-    },
-    created: function () {
-      initDistrictList(this)
-
-      var initFormData = this.initFormData
-      for (var i in this.form) {
-        if (initFormData[i]) {
-          this.form[i] = initFormData[i]
-        }
+      handleAreaChange () {
+        var that = this
+        that.form.district_name = that.areaOptionsSelect[0]
+        that.form.biz_area_name = that.areaOptionsSelect[1]
       }
     }
   }
 
-  function initDistrictList (that) {
-    getDistrictList().then(function (res) {
-      var data = res.data.data
-      var districtList = []
-      for (var i in data) {
-        districtList.push({
-          value: data[i].district,
-          label: data[i].district
-        })
-      }
-      that.district_list = districtList
-    })
-  }
-
-  function initRegionList (that, district) {
-    var param = {
-      district
-    }
-    getRegionList(param).then(function (res) {
-      var data = res.data.data
-      var regionList = []
-      for (var i in data) {
-        regionList.push({
-          value: data[i].region,
-          label: data[i].region
-        })
-      }
-      that.region_list = regionList
-      that.form.biz_area_name = ''
+  function initAreaList (that) {
+    getAreaList().then(function (res) {
+      var data = res.data
+      that.areaOptions = data
     })
   }
 </script>
